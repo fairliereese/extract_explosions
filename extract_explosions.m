@@ -149,7 +149,6 @@ binSize = fsDF/N;
 
 Fc1 = 50;   % High Pass cut off
 FO = 10;     % Order
-% [B,A] = butter(FO/2,Fc1/(fs/2),'high');
 
 % highpass filter
 [b,a] = ellip(4,0.1,40,Fc1*2/fsDF, 'high');
@@ -267,7 +266,8 @@ for iE = 1:nExp
   %% Duration Calculation
  
      dcOffset = mean(exTS);
-     exTS_abs = abs(exTS-dcOffset); %take the absolute value of raw energies
+     exTS = exTS-dcOffset; % apply dcOffset to the rest of the time series
+     exTS_abs = abs(exTS); %take the absolute value of raw energies
      exTS_smooth = fastsmooth(exTS_abs, smoothWin); %smooth
 
      exTS_dB = 20*log10(exTS_smooth); %convert to dB
