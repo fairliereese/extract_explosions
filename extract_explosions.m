@@ -173,6 +173,7 @@ dB3band = zeros(nExp,1);
 dB10band = zeros(nExp,1);
 exStart = zeros(nExp, 1); %raw start times of each explosion
 IEI = zeros(nExp - 1, 1); %inter explosion intervals
+RLnoise = zeros(nExp, 1); % received level of the noise
 
 startBuff = (0.2*fs) + 10000; % extra samples are to remove after filtering
 endBuff = 0.5*fs;
@@ -266,7 +267,7 @@ for iE = 1:nExp
   %% Duration Calculation
  
      dcOffset = mean(exTS);
-     exTS = exTS-dcOffset; % apply dcOffset to the rest of the time series
+     exTS = exTS- dcOffset;
      exTS_abs = abs(exTS); %take the absolute value of raw energies
      exTS_smooth = fastsmooth(exTS_abs, smoothWin); %smooth
 
@@ -304,32 +305,21 @@ for iE = 1:nExp
      starts(iE, 1) = stExp;
      
      exTSMat{iE,1} = exTS;  
-     
+    
      %% Signal:Noise Ratio
- 
-     %exTS_abs = abs(exTS-dcOffset); %take the absolute value of raw energies  
      
-     %exTS_abs_noInf = exTS_abs(~isinf(exTS_abs));
-     
-     %exTS_dB_75 = prctile(exTS_dB_noInf,75); %distribution of RLs
-     %exTS_dB_10 = prctile(exTS_dB_noInf, 10);
-     
-     %noise = exTS_dB_noInf(exTS_dB_noInf <= exTS_dB_75); %estimate the background noise
-     %noise = noise(noise > exTS_dB_10);
-     
-%      noise = [exTS_dB(1:stExp+1); exTS_dB(endExp+1:end)];
-%      noise = noise(~isinf(noise));
-%      signal = max(exTS_dB); 
-%      
-%      SNR(iE, 1) = signal - mean(noise); %compute the SNR
-%      RL(iE, 1) = max(exTS_dB_noInf); %compute the RL (not in dB)
-
      noise = [exTS_dB(1:stExp+1); exTS_dB(endExp+1:end)];
      noise = noise(~isinf(noise));
-     signal = max(exTS_dB); 
+     %signal = max(exTS_dB); 
+     signal = exTS_dB(stExp:endExp);
      
-     SNR(iE, 1) = signal - mean(noise); %compute the SNR
+     %SNR(iE, 1) = signal - mean(noise); %compute the SNR
+     SNR(iE, 1) = mean(signal);
      RL(iE, 1) = max(exTS_dB_noInf); %compute the RL (not in dB)
+     
+     %% Noise Received Level
+     
+     RLnoise(iE, 1) = mean(noise) + tfVals(find(fHzInterp == 500));
      
   %% Rise Time
   
@@ -577,7 +567,7 @@ for iE = 1:nExp
         pause
         close();
      end
-    if rem(iE, 100) == 0 || C > C1
+%     if rem(iE, 100) == 0 || C > C1
 %         figure;
 %         secs = (1:length(exTS_dB))/20000;
 %         plot(secs(:), exTS_dB(:));
@@ -587,17 +577,17 @@ for iE = 1:nExp
 %         plot(ends(iE)/20000, exTS_dB(ends(iE)), '*r');
 %         1;
         
-        figure;
-        plot(exTS_dB);
-        hold on;
-        title(num2str(SNR(iE)));
-        plot(stExp, exTS_dB(stExp), 'g*');
-        plot(endExp, exTS_dB(endExp), 'r*');
-        1;
+%         figure;
+%         plot(exTS_dB);
+%         hold on;
+%         title(num2str(SNR(iE)));
+%         plot(stExp, exTS_dB(stExp), 'g*');
+%         plot(endExp, exTS_dB(endExp), 'r*');
+%         1;
         %plot(I1, C1, 'ko');
         %plot(buffOffset, exTS_dB(buffOffset), 'go');
         %plot(floor(exDurSampNoBuf), exTS_dB(floor(exDurSampNoBuf)), 'ro');
-    end
+%     end
 end
 
 % make/save histograms of different parameters
@@ -607,10 +597,10 @@ if histFlag == 1
     cd(detPathName);
     
     graphs = {DurAvg, SEL, SPLrms, centerFreq, dB10band,...
-        dB3band, peakFreq, ppSignal};
+        dB3band, peakFreq, ppSignal, RLNoise};
     titles = {'DurAvg', 'SEL', 'SPLrms', 'centerFreq', 'dB10band',...
-        'dB3band', 'peakFreq', 'ppSignal'};
-    binSize = [20, 25, 25, 50, 30, 30, 50, 25];
+        'dB3band', 'peakFreq', 'ppSignal', 'RLNoise'};
+    binSize = [20, 25, 25, 50, 30, 30, 50, 25, 25];
     
     % make and save each histogram
     for i = 1:length(graphs)
