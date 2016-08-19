@@ -1,0 +1,4 @@
+# dnIEI
+Determines from the output of extract_explosions which gaps between explosions occur during the day, and which occur during the night. 
+This is useful because graphing the distribution of inter explosion intervals isn't very informative when they occur frequently
+during the night, but almost not at all during the day; skewing the distribution.
