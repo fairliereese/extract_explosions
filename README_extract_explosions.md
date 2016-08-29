@@ -17,3 +17,8 @@ Edit 1:
     - received level
     - duration
     - signal to noise ratio
+
+
+Edit 2:
+- both SNR calculations included
+- SEL calculation fixed
