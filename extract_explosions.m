@@ -126,7 +126,7 @@ if ~exist(fullfile(detPathName,headerFileName),'file')
     end
     
     nXwav =  size(xwavPathAll,1);
-    for iF = nXwav:nXwav %TODO
+    for iF = 1:nXwav
         [rawStart,rawDur,fs] = readxwavhd(xwavPathAll{iF});
         fileStart(iF,1) = datenum(rawStart(1,:));
         fileEnd(iF,1) = datenum(rawStart(end,:))+ (rawDur(end)/(60*60*24));
