@@ -29,8 +29,15 @@ if ~exist(fullfile(dpl.path, headerName),'file')
     dirList = dir(fullfile(xwav,'*disk*'));
     xwavPathAll = [];
     for iD = 1:length(dirList)
-        xwavNameList = dir(fullfile(xwav,dirList(iD).name,'*x.wav'));
-        xwavNameMat = vertcat(xwavNameList(:).name); % TODO change to cell array?
+        
+        % check to see if disk file is actually a directory we care about
+        subString = strfind(dirList(iD).name, dpl.filename(1:7));
+        if ~dirList(iD).isdir || isempty(subString)
+            continue
+        end
+        
+        xwavNameList = dir(fullfile(xwav,dirList(iD).name,[dpl.filename(1:7), '*x.wav']));
+        xwavNameMat = vertcat(xwavNameList(:).name);
         xwavPath = fullfile(xwav,dirList(iD).name);
         xwavPathMat = repmat([xwavPath,'\'],size(xwavNameMat,1),1);
         xwavFullfile = cellstr([xwavPathMat,xwavNameMat]);
@@ -382,5 +389,7 @@ toSave.fkHz = fkHz;
 toSave.fs = fs;
 toSave.fsDF = fsDF;
 end
+
+
 
 
